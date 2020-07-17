@@ -1,17 +1,18 @@
 'use strict';
 
 const logout = new LogoutButton;
-logout.action = () => ApiConnector.logout(response => {if (response.success) {location.reload()}});
+logout.action = () => ApiConnector.logout(response => {
+  if (response.success) {location.reload()
+}});
 
 ApiConnector.current(response => {
-  if (response) {
+  if (response.success) {
     ProfileWidget.showProfile(response.data);
   }
 });
 
 const rates = new RatesBoard;
 function getRates() {
-  // console.log('Запрос данных...');
   ApiConnector.getStocks(response => {
     if (response.success) {
       rates.clearTable();
@@ -23,3 +24,71 @@ function getRates() {
 getRates();
 setInterval(getRates, 60000);
 
+const manager = new MoneyManager;
+manager.addMoneyCallback = function(data) {
+  ApiConnector.addMoney(data, response => {
+    if (response.success) {
+      ProfileWidget.showProfile(response.data);
+      manager.setMessage(false, 'Деньги успешно зачислены.');
+    } else {
+      manager.setMessage(true, 'Ошибка! Деньги не зачислены.');
+    }
+  });
+}
+
+manager.conversionMoneyCallback = function(data) {
+  ApiConnector.convertMoney(data, response => {
+    if (response.success) {
+      ProfileWidget.showProfile(response.data);
+      manager.setMessage(false, 'Деньги успешно конвертированы.');
+    } else {
+      manager.setMessage(true, 'Ошибка! Деньги не конвертированы.');
+    }
+  })
+}
+
+manager.sendMoneyCallback = function(data) {
+  ApiConnector.transferMoney(data, response => {
+    if (response.success) {
+      ProfileWidget.showProfile(response.data);
+      manager.setMessage(false, 'Деньги успешно переведены.');
+    } else {
+      manager.setMessage(true, 'Ошибка! Деньги не переведены.');
+    }
+  })
+}
+
+function updateFavorites(response) {
+  favorites.clearTable();
+  favorites.fillTable(response.data);
+  manager.updateUsersList(response.data);
+}
+
+const favorites = new FavoritesWidget;
+ApiConnector.getFavorites(response => {
+  if (response.success) {
+    updateFavorites(response);
+  }
+});
+
+favorites.addUserCallback = function(data) {
+  ApiConnector.addUserToFavorites(data, response => {
+    if (response.success) {
+      updateFavorites(response);
+      favorites.setMessage(false, 'Пользователь успешно добавлен в "Избранные".');
+    } else {
+      favorites.setMessage(true, 'Ошибка! Пользователь не добавлен.');
+    }
+  });
+}
+
+favorites.removeUserCallback = function(id) {
+  ApiConnector.removeUserFromFavorites(id, response => {
+    if (response.success) {
+      updateFavorites(response);
+      favorites.setMessage(false, 'Пользователь успешно удалён из "Избранных".');
+    } else {
+      favorites.setMessage(true, 'Ошибка! Пользователь не удалён.');
+    }
+  });
+}

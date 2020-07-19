@@ -1,6 +1,6 @@
 'use strict';
 
-const logout = new LogoutButton;
+const logout = new LogoutButton();
 logout.action = () => ApiConnector.logout(response => {
   if (response.success) {location.reload()
 }});
@@ -11,7 +11,7 @@ ApiConnector.current(response => {
   }
 });
 
-const rates = new RatesBoard;
+const rates = new RatesBoard();
 function getRates() {
   ApiConnector.getStocks(response => {
     if (response.success) {
@@ -24,14 +24,14 @@ function getRates() {
 getRates();
 setInterval(getRates, 60000);
 
-const manager = new MoneyManager;
+const manager = new MoneyManager();
 manager.addMoneyCallback = function(data) {
   ApiConnector.addMoney(data, response => {
     if (response.success) {
       ProfileWidget.showProfile(response.data);
       manager.setMessage(false, 'Деньги успешно зачислены.');
     } else {
-      manager.setMessage(true, 'Ошибка! Деньги не зачислены.');
+      manager.setMessage(true, response.data);
     }
   });
 }
@@ -42,7 +42,7 @@ manager.conversionMoneyCallback = function(data) {
       ProfileWidget.showProfile(response.data);
       manager.setMessage(false, 'Деньги успешно конвертированы.');
     } else {
-      manager.setMessage(true, 'Ошибка! Деньги не конвертированы.');
+      manager.setMessage(true, response.data);
     }
   })
 }
@@ -53,7 +53,7 @@ manager.sendMoneyCallback = function(data) {
       ProfileWidget.showProfile(response.data);
       manager.setMessage(false, 'Деньги успешно переведены.');
     } else {
-      manager.setMessage(true, 'Ошибка! Деньги не переведены.');
+      manager.setMessage(true, response.data);
     }
   })
 }
@@ -64,7 +64,7 @@ function updateFavorites(response) {
   manager.updateUsersList(response.data);
 }
 
-const favorites = new FavoritesWidget;
+const favorites = new FavoritesWidget();
 ApiConnector.getFavorites(response => {
   if (response.success) {
     updateFavorites(response);
@@ -77,7 +77,7 @@ favorites.addUserCallback = function(data) {
       updateFavorites(response);
       favorites.setMessage(false, 'Пользователь успешно добавлен в "Избранные".');
     } else {
-      favorites.setMessage(true, 'Ошибка! Пользователь не добавлен.');
+      favorites.setMessage(true, response.data);
     }
   });
 }
@@ -88,7 +88,7 @@ favorites.removeUserCallback = function(id) {
       updateFavorites(response);
       favorites.setMessage(false, 'Пользователь успешно удалён из "Избранных".');
     } else {
-      favorites.setMessage(true, 'Ошибка! Пользователь не удалён.');
+      favorites.setMessage(true, response.data);
     }
   });
 }
